@@ -11,8 +11,10 @@ namespace screensaver2
         /// アプリケーションのメイン エントリ ポイントです。
         /// </summary>
         [STAThread]
+
         static void Main(string[] args)
         {
+            
             //二重起動チェック
             System.Threading.Mutex mutex = new System.Threading.Mutex(false, Application.ProductName);
             if (mutex.WaitOne(0, false) == false)
@@ -29,11 +31,7 @@ namespace screensaver2
                 switch (arg)
                 {
                     case "/c":
-                        // オプション ダイアログを表示します。
-                        //MessageBox.Show("オプション設定はありません。", Application.ProductName, MessageBoxButtons.OK, MessageBoxIcon.Information);
-                        Application.EnableVisualStyles();
-                        Application.SetCompatibleTextRenderingDefault(false);
-                        Application.Run(new Form2());
+                        ShowDialog();
                         break;
                     case "/p":
                         // プレビュー
@@ -55,6 +53,13 @@ namespace screensaver2
             }
 
         }
+        static void ShowDialog()
+        {
+            // オプション ダイアログを表示します。
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new Form2());
+        }
         static void ShowScreenSaver()
         {
             Application.EnableVisualStyles();
@@ -72,6 +77,35 @@ namespace screensaver2
             Application.SetCompatibleTextRenderingDefault(false);
             //args[1] はプレビューウィンドウのハンドル
             Application.Run(new Form1(new IntPtr(long.Parse(args[1]))));
+        }
+        public static void user_config_write(user_config user_config)
+        {
+            if (user_config.usrFontFamily == null)
+            {
+                user_config.usrColor = System.Drawing.SystemColors.ControlLightLight;
+                user_config.usrFontSize = 36;
+                user_config.usrFontFamily = System.Drawing.SystemFonts.DefaultFont.FontFamily.Name;
+            }
+
+            Microsoft.Win32.RegistryKey regApp = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Loft\clock_screensaver");
+            regApp.SetValue("FontFamily", user_config.usrFontFamily, Microsoft.Win32.RegistryValueKind.String);
+            regApp.SetValue("FontSize", user_config.usrFontSize, Microsoft.Win32.RegistryValueKind.DWord);
+            regApp.SetValue("FontColor", user_config.usrColor.Name, Microsoft.Win32.RegistryValueKind.String);
+
+        }
+        public static void user_config_read(user_config user_config)
+        {
+            Microsoft.Win32.RegistryKey regApp = Microsoft.Win32.Registry.CurrentUser.CreateSubKey(@"Software\Loft\clock_screensaver");
+
+            string regvalFontFamily = (string)regApp.GetValue("FontFamily");
+            if (regvalFontFamily == (string)null)
+            {
+                user_config_write(user_config);
+            }
+            user_config.usrFontFamily = (string)regApp.GetValue("FontFamily");
+            user_config.usrFontSize = (int)regApp.GetValue("FontSize");
+            user_config.usrColor = new System.Drawing.Color();
+            user_config.usrColor = System.Drawing.Color.FromName((string)regApp.GetValue("FontColor"));
         }
     }
 }

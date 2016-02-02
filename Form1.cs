@@ -43,8 +43,10 @@ namespace screensaver2
             Cursor.Hide();
             TopMost = true;
 
-            Font f = new Font("MS UI Gothic", 32);
-            label1.Font = f;
+            user_config user_config = new user_config();
+            Program.user_config_read(user_config);
+            label1.Font = new System.Drawing.Font(user_config.usrFontFamily, user_config.usrFontSize);
+            label1.ForeColor = user_config.usrColor;
 
             init();
             this.Click += new System.EventHandler(this.Form1_Click);
